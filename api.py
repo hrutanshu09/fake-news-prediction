@@ -1,17 +1,15 @@
 from flask import Flask, request, jsonify
 import pickle
 import re
+import numpy as np # Import numpy
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
-# Initialize Flask app
 app = Flask(__name__)
 
-# Load the trained model and vectorizer
 model = pickle.load(open('model.pkl', 'rb'))
 tfidf_vectorizer = pickle.load(open('tfidf_vectorizer.pkl', 'rb'))
 
-# Preprocessing function
 ps = PorterStemmer()
 def preprocess_text(text):
     review = re.sub('[^a-zA-Z]', ' ', text)
@@ -20,7 +18,10 @@ def preprocess_text(text):
     review = [ps.stem(word) for word in review if not word in stopwords.words('english')]
     return ' '.join(review)
 
-# Route for prediction
+# --- Sigmoid function to convert score to probability ---
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.get_json()
@@ -30,12 +31,25 @@ def predict():
     news_text = data['news']
     processed_text = preprocess_text(news_text)
     vectorized_text = tfidf_vectorizer.transform([processed_text]).toarray()
-    prediction = model.predict(vectorized_text)
+    
+    # --- UPDATED LOGIC ---
+    # Get the raw score from the decision function
+    score = model.decision_function(vectorized_text)[0]
+    
+    # Determine prediction and confidence
+    if score > 0:
+        prediction = 'Fake News'
+        # Confidence is the probability of it being FAKE
+        confidence = sigmoid(score)
+    else:
+        prediction = 'Real News'
+        # Confidence is the probability of it being REAL
+        confidence = 1 - sigmoid(score)
 
-    result = 'Fake News' if prediction[0] == 1 else 'Real News'
-
-    return jsonify({'prediction': result})
+    return jsonify({
+        'prediction': prediction,
+        'confidence': confidence 
+    })
 
 if __name__ == '__main__':
-    # Run on port 5000
     app.run(port=5000, debug=True)

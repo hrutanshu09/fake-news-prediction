@@ -1,12 +1,25 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #f0f2f5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
     margin: 0;
     color: #333;
+}
+
+/* --- UPDATED: Main page layout --- */
+.page-wrapper {
+    display: flex;
+    justify-content: space-around; /* Pushes content to the sides */
+    align-items: flex-start;
+    padding: 40px; /* Added more padding */
+    gap: 30px;
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.main-content {
+    flex-grow: 1;
+    max-width: 600px;
 }
 
 .container {
@@ -15,8 +28,7 @@ body {
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     text-align: center;
-    width: 90%;
-    max-width: 600px;
+    width: 100%;
 }
 
 h1 {
@@ -40,6 +52,12 @@ textarea {
     resize: vertical;
 }
 
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
 button {
     background-color: #1877f2;
     color: #fff;
@@ -55,8 +73,19 @@ button:hover {
     background-color: #166fe5;
 }
 
-#result {
+#clearBtn {
+    background-color: #6c757d;
+}
+
+#clearBtn:hover {
+    background-color: #5a6268;
+}
+
+#result-container {
     margin-top: 20px;
+}
+
+#result {
     font-size: 22px;
     font-weight: bold;
 }
@@ -69,13 +98,96 @@ button:hover {
     color: #e74c3c;
 }
 
-#explanation::after {
-  content: "▋";
-  animation: blink 1s infinite;
-  color: #1877f2;
-  margin-left: 2px;
+.hidden {
+    display: none;
+}
+
+/* --- UPDATED: Vertical Confidence Chart size --- */
+#confidence-chart-container {
+    width: 150px; /* Increased from 120px */
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#confidence-chart-container h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 16px;
+    color: #495057;
+}
+
+.chart-vertical-bar-wrapper {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.chart-bar.vertical {
+    width: 50px; /* Increased from 40px */
+    height: 400px; /* Increased from 300px */
+    background-color: #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.bar-fill {
+    width: 100%;
+    height: 0%;
+    transition: height 0.5s ease-in-out;
+}
+
+.fake-bar { background-color: #e74c3c; }
+.real-bar { background-color: #31a24c; }
+
+.chart-labels {
+    margin-top: 20px;
+    width: 100%;
+}
+
+.label-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.fake-dot { background-color: #e74c3c; }
+.real-dot { background-color: #31a24c; }
+
+
+#explanation {
+    margin-top: 25px;
+    padding: 15px;
+    font-size: 16px;
+    color: #333;
+    text-align: left;
+    line-height: 1.6;
+    background-color: #f0f2f5;
+    border-left: 5px solid #1877f2;
+    border-radius: 4px;
+}
+
+#explanation.typing::after {
+    content: "▋";
+    animation: blink 1s infinite;
+    color: #1877f2;
+    margin-left: 2px;
 }
 
 @keyframes blink {
-  50% { opacity: 0; }
+    50% { opacity: 0; }
 }

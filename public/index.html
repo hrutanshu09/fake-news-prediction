@@ -7,14 +7,41 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Fake News Predictor</h1>
-        <p>Enter the title of a news article to check if it's real or fake.</p>
-        <textarea id="newsText" placeholder="Enter news title here..."></textarea>
-        <button id="predictBtn">Predict</button>
-        <div id="result-container">
-            <div id="result"></div>
-            <div id="explanation"></div>
+    <div class="page-wrapper">
+        <div class="main-content">
+            <div class="container">
+                <h1>Fake News Predictor</h1>
+                <p>Enter the title of a news article to check if it's real or fake.</p>
+                <textarea id="newsText" placeholder="Enter news title here..."></textarea>
+                <div class="button-group">
+                    <button id="predictBtn">Predict</button>
+                    <button id="clearBtn">Clear</button>
+                </div>
+                <div id="result-container">
+                    <div id="result"></div>
+                    <div id="explanation" class="hidden"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="confidence-chart-container" class="hidden">
+            <h3>Confidence</h3>
+            <div class="chart-vertical-bar-wrapper">
+                <div class="chart-bar vertical">
+                    <div id="fake-bar" class="bar-fill fake-bar"></div>
+                    <div id="real-bar" class="bar-fill real-bar"></div>
+                </div>
+            </div>
+            <div class="chart-labels">
+                <div class="label-group">
+                    <span class="dot fake-dot"></span>
+                    <span>Fake: <b id="fake-percent">0%</b></span>
+                </div>
+                <div class="label-group">
+                    <span class="dot real-dot"></span>
+                    <span>Real: <b id="real-percent">0%</b></span>
+                </div>
+            </div>
         </div>
     </div>
     <script src="/script.js"></script>

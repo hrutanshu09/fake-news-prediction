@@ -5,16 +5,12 @@ const path = require('path');
 const app = express();
 const PORT = 3000;
 
-// Python model endpoint (your classifier)
 const PYTHON_API_URL = 'http://127.0.0.1:5000/predict';
-
-// Ollama endpoint
 const OLLAMA_API_URL = 'http://127.0.0.1:11434/api/generate';
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- Main prediction route with streaming ---
 app.post('/predict', async (req, res) => {
     try {
         const { news } = req.body;
@@ -22,16 +18,17 @@ app.post('/predict', async (req, res) => {
             return res.status(400).json({ error: 'News text is required' });
         }
 
-        // Step 1: Get prediction from Python classifier
+        // --- UPDATED ---
+        // Step 1: Get both prediction AND confidence from Python classifier
         const initialPredictionResponse = await axios.post(PYTHON_API_URL, { news });
-        const initialPrediction = initialPredictionResponse.data.prediction;
+        const { prediction, confidence } = initialPredictionResponse.data;
 
         // Step 2: Build prompt for explanation
         const prompt = `
-            A news headline has been classified as "${initialPrediction}".
+            A news headline has been classified as "${prediction}".
             The headline is: "${news}"
 
-            Based on this classification, provide a brief, 2-3 sentence explanation for why this headline might be considered ${initialPrediction}.
+            Based on this classification, provide a brief, 2-3 sentence explanation for why this headline might be considered ${prediction}.
             - If FAKE, focus on sensational language, emotional triggers, or unverifiable claims.
             - If REAL, focus on objective tone, factual language, and specific details.
             Do not question the initial classification. Just explain it.
@@ -41,8 +38,9 @@ app.post('/predict', async (req, res) => {
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         res.setHeader('Transfer-Encoding', 'chunked');
 
-        // Send the prediction immediately
-        res.write(JSON.stringify({ prediction: initialPrediction }) + "\n");
+        // --- UPDATED ---
+        // Send the prediction and confidence immediately
+        res.write(JSON.stringify({ prediction, confidence }) + "\n");
 
         // Step 4: Stream explanation from Ollama
         const ollamaResponse = await axios.post(
@@ -62,7 +60,6 @@ app.post('/predict', async (req, res) => {
                     if (line.trim() === "") continue;
                     const parsed = JSON.parse(line);
                     if (parsed.response) {
-                        // Send each chunk progressively
                         res.write(JSON.stringify({ explanationChunk: parsed.response }) + "\n");
                     }
                 }
@@ -72,7 +69,7 @@ app.post('/predict', async (req, res) => {
         });
 
         ollamaResponse.data.on('end', () => {
-            res.end(); // close stream when done
+            res.end();
         });
 
     } catch (error) {
@@ -85,7 +82,7 @@ app.post('/predict', async (req, res) => {
     }
 });
 
-// --- Start server ---
 app.listen(PORT, () => {
     console.log(`Node.js server running at http://localhost:${PORT}`);
 });
+
