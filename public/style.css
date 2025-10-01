@@ -69,14 +69,13 @@ button:hover {
     color: #e74c3c;
 }
 
-#explanation {
-  margin-top: 25px;
-  padding: 15px;
-  font-size: 16px;
-  color: #333;
-  text-align: left;
-  line-height: 1.6;
-  background-color: #f0f2f5; /* A light background to stand out */
-  border-left: 5px solid #1877f2; /* An accent border matching the button */
-  border-radius: 4px;
+#explanation::after {
+  content: "▋";
+  animation: blink 1s infinite;
+  color: #1877f2;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
 }
