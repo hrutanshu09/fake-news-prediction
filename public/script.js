@@ -9,39 +9,91 @@ document.addEventListener('DOMContentLoaded', () => {
     const realBar = document.getElementById('real-bar');
     const fakePercent = document.getElementById('fake-percent');
     const realPercent = document.getElementById('real-percent');
+    const inputTypeRadios = document.querySelectorAll('input[name="inputType"]');
+    const errorModal = document.getElementById('error-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const modalMessage = document.getElementById('modal-message');
 
-    // --- NEW: Holds the controller for the current fetch request ---
     let controller = null;
 
-    // Hide elements on page load
-    explanationDiv.classList.add('hidden');
-    chartContainer.classList.add('hidden');
+    if (errorModal) {
+        errorModal.style.display = 'none';
+    }
+
+    if(closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            errorModal.style.display = 'none';
+        });
+    }
+
+    // --- NEW: Auto-resize textarea function ---
+    const autoResizeTextarea = () => {
+        newsText.style.height = 'auto'; // Reset height to shrink if needed
+        newsText.style.height = (newsText.scrollHeight) + 'px'; // Set to content height
+    };
+
+    // --- NEW: Add event listener for input ---
+    newsText.addEventListener('input', autoResizeTextarea);
+
+
+    inputTypeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.value === 'url') {
+                newsText.placeholder = 'Enter article URL here... (e.g., https://...)';
+            } else {
+                newsText.placeholder = 'Enter news title here...';
+            }
+            newsText.value = '';
+            // Trigger resize after clearing
+            autoResizeTextarea();
+        });
+    });
 
     predictBtn.addEventListener('click', async function() {
-        if (newsText.value.trim() === '') {
-            resultDiv.textContent = 'Please enter some news text.';
+        const inputText = newsText.value;
+        if (inputText.trim() === '') {
+            resultDiv.textContent = 'Please enter a title or URL.';
             resultDiv.className = 'fake';
             return;
         }
 
-        // --- NEW: Abort any previous request before starting a new one ---
-        if (controller) {
-            controller.abort();
-        }
-        // Create a new controller for the new request
+        if (controller) { controller.abort(); }
         controller = new AbortController();
         const signal = controller.signal;
 
-        clearUI(true); 
+        clearUI(true);
         resultDiv.textContent = 'Analyzing...';
         
         try {
+            const selectedType = document.querySelector('input[name="inputType"]:checked').value;
             const response = await fetch('/predict', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ news: newsText.value }),
-                signal: signal // --- Pass the signal to the fetch request ---
+                body: JSON.stringify({ input: inputText, type: selectedType }),
+                signal: signal
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                
+                if (errorData.error && errorData.error.includes("legal or regional restrictions")) {
+                    modalMessage.textContent = errorData.error + " Please switch to 'Title' mode and enter the headline manually.";
+                    errorModal.style.display = 'flex';
+                    resultDiv.textContent = ''; 
+                    resultDiv.className = '';
+                    return;
+                }
+                
+                if (errorData.error && errorData.error.includes("Could not find a valid headline")) {
+                    modalMessage.textContent = "Could not find a valid headline at that URL. Please try entering the title manually.";
+                    errorModal.style.display = 'flex';
+                    resultDiv.textContent = ''; 
+                    resultDiv.className = '';
+                    return;
+                }
+
+                throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+            }
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -80,49 +132,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (error) {
-            // --- NEW: Gracefully handle the abort error ---
             if (error.name === 'AbortError') {
                 console.log('Fetch aborted.');
-                // The UI is already cleared, so we just stop.
                 return;
             }
             console.error('Error:', error);
-            resultDiv.textContent = 'An error occurred. Check the server logs.';
+            resultDiv.textContent = error.message;
             resultDiv.className = 'fake';
-            clearUI();
+            clearUI(true);
         }
     });
     
     clearBtn.addEventListener('click', () => {
-        // --- NEW: Abort the fetch request when clearing ---
-        if (controller) {
-            controller.abort();
-        }
+        if (controller) { controller.abort(); }
         clearUI(false);
+        // Trigger resize after clearing
+        autoResizeTextarea();
     });
 
     function clearUI(keepInput = false) {
-        if (!keepInput) {
-            newsText.value = '';
-        }
+        if (!keepInput) { newsText.value = ''; }
         resultDiv.textContent = '';
         explanationDiv.textContent = '';
         resultDiv.className = '';
         explanationDiv.classList.remove('typing');
         explanationDiv.classList.add('hidden');
-        
         chartContainer.classList.add('hidden');
-        fakeBar.style.height = '0%';
-        realBar.style.height = '0%';
-        fakePercent.textContent = '0%';
-        realPercent.textContent = '0%';
+        if(fakeBar) fakeBar.style.height = '0%';
+        if(realBar) realBar.style.height = '0%';
+        if(fakePercent) fakePercent.textContent = '0%';
+        if(realPercent) realPercent.textContent = '0%';
     }
 
     function updateChart(prediction, confidence) {
         const confidencePercent = confidence * 100;
-        let fakeVal = 0;
-        let realVal = 0;
-
+        let fakeVal = 0, realVal = 0;
         if (prediction === 'Fake News') {
             fakeVal = confidencePercent;
             realVal = 100 - confidencePercent;
@@ -130,12 +174,10 @@ document.addEventListener('DOMContentLoaded', () => {
             realVal = confidencePercent;
             fakeVal = 100 - confidencePercent;
         }
-
         fakeBar.style.height = `${fakeVal}%`;
         realBar.style.height = `${realVal}%`;
         fakePercent.textContent = `${fakeVal.toFixed(1)}%`;
         realPercent.textContent = `${realVal.toFixed(1)}%`;
-        
         chartContainer.classList.remove('hidden');
     }
 });

@@ -10,11 +10,27 @@
     <div class="page-wrapper">
         <div class="main-content">
             <div class="container">
+                <div class="header-links">
+                    <a href="/history.html" class="history-link">View History →</a>
+                    <a href="/logout" class="logout-link">Logout</a>
+                </div>
                 <h1>Fake News Predictor</h1>
-                 <a href="/history.html" class="history-link">View History →</a> 
-                 <a href="/logout" class="logout-link">Logout</a>
-                <p>Enter the title of a news article to check if it's real or fake.</p>
+                <p>Enter the title of a news article or the article's URL to check if it's real or fake.</p>
+
+                <div class="input-type-selector">
+                    <label>
+                        <input type="radio" name="inputType" value="title" checked>
+                        <span>Title</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="inputType" value="url">
+                        <span>URL</span>
+                    </label>
+                </div>
+
+                <!-- UPDATED: Changed back to a textarea for better resizing -->
                 <textarea id="newsText" placeholder="Enter news title here..."></textarea>
+                
                 <div class="button-group">
                     <button id="predictBtn">Predict</button>
                     <button id="clearBtn">Clear</button>
@@ -46,6 +62,15 @@
             </div>
         </div>
     </div>
+
+    <div id="error-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Access Denied</h3>
+            <p id="modal-message">This website is blocking access. Please switch to "Title" mode and enter the headline manually.</p>
+            <button id="close-modal-btn">OK</button>
+        </div>
+    </div>
+    
     <script src="/script.js"></script>
 </body>
 </html>

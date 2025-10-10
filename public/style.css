@@ -3,7 +3,6 @@ body {
     background-color: #f0f2f5;
     margin: 0;
     color: #333;
-
     display: flex;
     justify-content: center;
     align-items: center;
@@ -12,12 +11,11 @@ body {
     box-sizing: border-box;
 }
 
-/* --- UPDATED: Main page layout --- */
 .page-wrapper {
     display: flex;
-    justify-content: space-around; /* Pushes content to the sides */
+    justify-content: space-around;
     align-items: flex-start;
-    padding: 40px; /* Added more padding */
+    padding: 40px;
     gap: 30px;
     width: 100%;
     min-height: 100vh;
@@ -48,16 +46,57 @@ p {
     margin-bottom: 20px;
 }
 
-textarea {
+.input-type-selector {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+    background-color: #e9ecef;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.input-type-selector label {
+    flex: 1;
+    padding: 8px 10px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.3s;
+    position: relative;
+}
+
+.input-type-selector input[type="radio"] {
+    display: none;
+}
+
+.input-type-selector input[type="radio"]:checked+span {
+    background-color: #fff;
+    color: #1877f2;
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.input-type-selector span {
+    display: block;
     width: 100%;
-    height: 150px;
+}
+
+/* --- UPDATED: Styles for auto-resizing textarea --- */
+#newsText {
+    width: 100%;
+    min-height: 50px;
     padding: 10px;
     border-radius: 6px;
     border: 1px solid #dddfe2;
     margin-bottom: 20px;
     font-size: 16px;
-    resize: vertical;
+    box-sizing: border-box;
+    resize: none;
+    overflow-y: hidden; /* This line removes the scrollbar */
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
 }
+
 
 .button-group {
     display: flex;
@@ -109,9 +148,8 @@ button:hover {
     display: none;
 }
 
-/* --- UPDATED: Vertical Confidence Chart size --- */
 #confidence-chart-container {
-    width: 150px; /* Increased from 120px */
+    width: 150px;
     padding: 20px;
     background-color: #fff;
     border-radius: 10px;
@@ -135,8 +173,8 @@ button:hover {
 }
 
 .chart-bar.vertical {
-    width: 50px; /* Increased from 40px */
-    height: 400px; /* Increased from 300px */
+    width: 50px;
+    height: 400px;
     background-color: #e9ecef;
     border-radius: 8px;
     overflow: hidden;
@@ -150,8 +188,13 @@ button:hover {
     transition: height 0.5s ease-in-out;
 }
 
-.fake-bar { background-color: #e74c3c; }
-.real-bar { background-color: #31a24c; }
+.fake-bar {
+    background-color: #e74c3c;
+}
+
+.real-bar {
+    background-color: #31a24c;
+}
 
 .chart-labels {
     margin-top: 20px;
@@ -172,8 +215,13 @@ button:hover {
     margin-right: 8px;
 }
 
-.fake-dot { background-color: #e74c3c; }
-.real-dot { background-color: #31a24c; }
+.fake-dot {
+    background-color: #e74c3c;
+}
+
+.real-dot {
+    background-color: #31a24c;
+}
 
 
 #explanation {
@@ -196,22 +244,23 @@ button:hover {
 }
 
 @keyframes blink {
-    50% { opacity: 0; }
+    50% {
+        opacity: 0;
+    }
 }
 
-/* --- NEW: History Page Styles --- */
-
-.history-link, .back-link {
-    display: block;
-    text-align: right;
-    margin-bottom: 15px;
+.history-link,
+.back-link,
+.logout-link {
     color: #1877f2;
     text-decoration: none;
     font-weight: bold;
 }
 
-.back-link {
-    text-align: left;
+.header-links {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
 }
 
 .history-container {
@@ -231,7 +280,8 @@ table {
     text-align: left;
 }
 
-th, td {
+th,
+td {
     padding: 12px 15px;
     border-bottom: 1px solid #ddd;
 }
@@ -244,10 +294,10 @@ tbody tr:hover {
     background-color: #f9f9f9;
 }
 
-/* --- NEW: Auth Page Styles --- */
 .auth-container {
     max-width: 400px;
 }
+
 .auth-container input {
     display: block;
     width: 100%;
@@ -258,25 +308,62 @@ tbody tr:hover {
     border-radius: 4px;
     box-sizing: border-box;
 }
+
 .auth-switch {
     margin-top: 15px;
     font-size: 14px;
 }
+
 .auth-message {
     margin-top: 15px;
     font-weight: bold;
 }
-.auth-message.success { color: #31a24c; }
-.auth-message.error { color: #e74c3c; }
 
-/* --- NEW: Header Link Styles --- */
-.header-links {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
+.auth-message.success {
+    color: #31a24c;
 }
-.history-link, .back-link, .logout-link {
-    color: #1877f2;
-    text-decoration: none;
-    font-weight: bold;
+
+.auth-message.error {
+    color: #e74c3c;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 400px;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: #e74c3c;
+}
+
+.modal-content p {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+#close-modal-btn {
+    background-color: #1877f2;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
 }
