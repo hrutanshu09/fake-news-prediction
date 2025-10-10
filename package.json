@@ -1,11 +1,16 @@
 {
+  "name": "fake-news-app",
+  "version": "1.0.0",
+  "description": "A server for the fake news prediction app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "axios": "^1.12.2",
-    "bcrypt": "^6.0.0",
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0",
-    "express-session": "^1.18.2",
-    "sqlite3": "^5.1.7"
+    "express": "^5.1.0"
   }
 }
+
+
+
