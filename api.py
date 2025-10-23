@@ -39,7 +39,7 @@ def predict():
         prediction = 'Fake News'
         confidence = sigmoid(score)
     else:
-        prediction = 'Real News'
+        prediction = 'Real News'                        
         confidence = 1 - sigmoid(score)
 
     return jsonify({
