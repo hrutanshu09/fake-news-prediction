@@ -7,6 +7,7 @@ from nltk.stem.porter import PorterStemmer
 
 app = Flask(__name__)
 
+# Load the trained model and vectorizer
 model = pickle.load(open('model.pkl', 'rb'))
 tfidf_vectorizer = pickle.load(open('tfidf_vectorizer.pkl', 'rb'))
 
@@ -26,10 +27,6 @@ def predict():
     data = request.get_json()
     news_text = data['news']
     
-    # --- NEW: Logging ---
-    print(f"[DEBUG] Headline received by Python: \"{news_text}\"")
-    # ------------------
-
     processed_text = preprocess_text(news_text)
     vectorized_text = tfidf_vectorizer.transform([processed_text]).toarray()
     
@@ -39,7 +36,7 @@ def predict():
         prediction = 'Fake News'
         confidence = sigmoid(score)
     else:
-        prediction = 'Real News'                        
+        prediction = 'Real News'
         confidence = 1 - sigmoid(score)
 
     return jsonify({

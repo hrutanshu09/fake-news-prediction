@@ -1,23 +1,27 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Header() {
-  const location = useLocation();
+  const navigate = useNavigate();
   const isLoggedIn = !!localStorage.getItem('user');
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await fetch('http://localhost:3000/logout', { 
+        method: 'POST', 
+        credentials: 'include' 
+    });
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    navigate('/login');
   };
 
-  if (!isLoggedIn || ['/', '/login', '/signup'].includes(location.pathname)) {
+  if (!isLoggedIn) {
     return null;
   }
 
   return (
-    <div className="header-links">
-      <Link to="/history" className="history-link">View History →</Link>
-      <button onClick={handleLogout} className="logout-link">Logout</button>
+    <div style={{ padding: '10px', background: '#eee', textAlign: 'right' }}>
+      <Link to="/history" style={{ marginRight: '15px' }}>View History</Link>
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
 }

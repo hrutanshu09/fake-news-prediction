@@ -6,7 +6,6 @@ import Signup from './components/Signup';
 import Predictor from './components/Predictor';
 import History from './components/History';
 import Header from './components/Header';
-import './style.css';
 
 function App() {
   return (

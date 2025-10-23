@@ -9,18 +9,24 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const res = await fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+        credentials: 'include'
+      });
 
-    if (res.ok) {
-      localStorage.setItem('user', JSON.stringify({ username }));
-      navigate('/predictor');
-    } else {
       const data = await res.json();
-      setMessage(data.message);
+      if (res.ok) {
+        localStorage.setItem('user', JSON.stringify({ username }));
+        navigate('/predictor');
+      } else {
+        setMessage(data.message || 'An error occurred.');
+      }
+    } catch (error) {
+        console.error("Fetch failed:", error);
+        setMessage("Could not connect to the server. Is it running?");
     }
   };
 

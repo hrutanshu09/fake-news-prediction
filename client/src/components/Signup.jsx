@@ -18,13 +18,13 @@ function Signup() {
     const res = await fetch('http://localhost:3000/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, confirmPassword }),
+      body: JSON.stringify({ username, password, confirmPassword })
     });
 
     const data = await res.json();
     setMessage(data.message);
-    if (data.success) {
-      setTimeout(() => navigate('/login'), 1500);
+    if (res.ok) {
+        setTimeout(() => navigate('/login'), 1500);
     }
   };
 
@@ -38,7 +38,7 @@ function Signup() {
         <button type="submit">Sign Up</button>
       </form>
       <p className="auth-switch">Already have an account? <Link to="/login">Login</Link></p>
-      {message && <div className={`auth-message ${message.includes('successful') ? 'success' : 'error'}`}>{message}</div>}
+      {message && <div className="auth-message">{message}</div>}
     </div>
   );
 }

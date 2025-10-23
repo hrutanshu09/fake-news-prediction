@@ -1,4 +1,3 @@
-// server.js - CORRECTED VERSION
 const express = require('express');
 const axios = require('axios');
 const sqlite3 = require('sqlite3').verbose();
@@ -12,9 +11,8 @@ const PORT = 3000;
 const PYTHON_API_URL = 'http://127.0.0.1:5000/predict';
 
 // --- Middleware ---
-// IMPORTANT: Configure CORS to allow credentials from your React app's origin
 app.use(cors({
-    origin: 'http://localhost:3001', // The address of your React app
+    origin: 'http://localhost:3001', // Allow requests from your React app
     credentials: true
 }));
 app.use(express.json());
@@ -35,12 +33,11 @@ db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS predictions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, headline TEXT NOT NULL, prediction TEXT NOT NULL, confidence REAL NOT NULL, explanation TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users (id))`);
 });
 
-// --- API-FRIENDLY AUTH MIDDLEWARE ---
+// --- API-Friendly Auth Middleware ---
 const checkAuth = (req, res, next) => {
     if (req.session.user) {
         next();
     } else {
-        // **FIXED**: Send a 401 Unauthorized status with a JSON error
         res.status(401).json({ success: false, message: 'Unauthorized: Please log in.' });
     }
 };
@@ -58,6 +55,7 @@ app.post('/signup', async (req, res) => {
 });
 
 app.post('/login', (req, res) => {
+    console.log('✅ /login endpoint was hit!');
     const { username, password } = req.body;
     db.get('SELECT * FROM users WHERE username = ?', [username], async (err, user) => {
         if (err || !user || !await bcrypt.compare(password, user.password)) {
@@ -73,7 +71,7 @@ app.post('/logout', (req, res) => {
         if (err) {
             return res.status(500).json({ success: false, message: 'Could not log out.' });
         }
-        res.clearCookie('connect.sid'); // Clear the session cookie
+        res.clearCookie('connect.sid');
         return res.json({ success: true, message: 'Logged out successfully.' });
     });
 });
@@ -88,10 +86,36 @@ app.get('/history', checkAuth, (req, res) => {
 });
 
 app.post('/predict', checkAuth, async (req, res) => {
-    // ... your predict logic remains the same ...
-    // Note: The code for the predict route itself was correct.
     let predictionData = { userId: req.session.user.id };
-    // ... (rest of the /predict code from your file)
+    try {
+        const { input, type } = req.body;
+        if (!input) return res.status(400).json({ error: 'Input is required' });
+
+        let headline = input;
+
+        if (type === 'url') {
+            const url = input.startsWith('http') ? input : `https://${input}`;
+            const response = await axios.get(url, { timeout: 5000 });
+            const $ = cheerio.load(response.data);
+            let scrapedTitle = $('meta[property="og:title"]').attr('content') || $('meta[name="twitter:title"]').attr('content') || $('title').text() || $('h1').first().text();
+            if (!scrapedTitle || scrapedTitle.trim() === '') {
+                throw new Error("Could not find a title for this URL.");
+            }
+            headline = scrapedTitle.split(/\||-|–/)[0].trim();
+        }
+        
+        predictionData.headline = headline;
+        const initialPredictionResponse = await axios.post(PYTHON_API_URL, { news: headline });
+        const { prediction, confidence } = initialPredictionResponse.data;
+
+        res.json({ prediction, confidence });
+
+    } catch (error) {
+        console.error('Error in /predict route:', error.message);
+        if (!res.headersSent) {
+             res.status(500).json({ error: 'An internal error occurred.' });
+        }
+    }
 });
 
 app.listen(PORT, () => {
