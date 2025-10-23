@@ -133,3 +133,22 @@ textarea {
     background-color: #f8d7da;
     color: #721c24;
 }
+
+/* Add this to the end of your style.css file */
+
+.explanation-box {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    text-align: left;
+    white-space: pre-wrap; /* Ensures the text wraps correctly */
+}
+
+.explanation-box p {
+    margin: 0;
+    text-align: left;
+    font-size: 0.95em;
+    line-height: 1.5;
+}

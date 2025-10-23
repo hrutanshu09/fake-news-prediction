@@ -1,3 +1,4 @@
+// server.js - FINAL VERSION
 const express = require('express');
 const axios = require('axios');
 const sqlite3 = require('sqlite3').verbose();
@@ -5,6 +6,12 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 const cheerio = require('cheerio');
 const cors = require('cors');
+require('dotenv').config(); // <-- Add this line to load .env variables
+
+// --- Add Gemini AI Setup ---
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// -------------------------
 
 const app = express();
 const PORT = 3000;
@@ -12,7 +19,7 @@ const PYTHON_API_URL = 'http://127.0.0.1:5000/predict';
 
 // --- Middleware ---
 app.use(cors({
-    origin: 'http://localhost:3001', // Allow requests from your React app
+    origin: 'http://localhost:3001',
     credentials: true
 }));
 app.use(express.json());
@@ -33,7 +40,7 @@ db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS predictions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, headline TEXT NOT NULL, prediction TEXT NOT NULL, confidence REAL NOT NULL, explanation TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users (id))`);
 });
 
-// --- API-Friendly Auth Middleware ---
+// --- Auth Middleware ---
 const checkAuth = (req, res, next) => {
     if (req.session.user) {
         next();
@@ -42,7 +49,8 @@ const checkAuth = (req, res, next) => {
     }
 };
 
-// --- Authentication Routes ---
+// --- Authentication Routes (Login, Signup, Logout) ---
+// (These routes remain the same as the previous version)
 app.post('/signup', async (req, res) => {
     const { username, password, confirmPassword } = req.body;
     if (!username || !password || !confirmPassword) { return res.status(400).json({ success: false, message: 'All fields are required.' }); }
@@ -55,7 +63,6 @@ app.post('/signup', async (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-    console.log('✅ /login endpoint was hit!');
     const { username, password } = req.body;
     db.get('SELECT * FROM users WHERE username = ?', [username], async (err, user) => {
         if (err || !user || !await bcrypt.compare(password, user.password)) {
@@ -68,13 +75,12 @@ app.post('/login', (req, res) => {
 
 app.post('/logout', (req, res) => {
     req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).json({ success: false, message: 'Could not log out.' });
-        }
+        if (err) { return res.status(500).json({ success: false, message: 'Could not log out.' }); }
         res.clearCookie('connect.sid');
         return res.json({ success: true, message: 'Logged out successfully.' });
     });
 });
+
 
 // --- Protected API Routes ---
 app.get('/history', checkAuth, (req, res) => {
@@ -86,37 +92,53 @@ app.get('/history', checkAuth, (req, res) => {
 });
 
 app.post('/predict', checkAuth, async (req, res) => {
-    let predictionData = { userId: req.session.user.id };
+    // This route now only returns the prediction and confidence
     try {
         const { input, type } = req.body;
-        if (!input) return res.status(400).json({ error: 'Input is required' });
-
         let headline = input;
 
         if (type === 'url') {
             const url = input.startsWith('http') ? input : `https://${input}`;
             const response = await axios.get(url, { timeout: 5000 });
             const $ = cheerio.load(response.data);
-            let scrapedTitle = $('meta[property="og:title"]').attr('content') || $('meta[name="twitter:title"]').attr('content') || $('title').text() || $('h1').first().text();
-            if (!scrapedTitle || scrapedTitle.trim() === '') {
-                throw new Error("Could not find a title for this URL.");
-            }
-            headline = scrapedTitle.split(/\||-|–/)[0].trim();
+            headline = ($('meta[property="og:title"]').attr('content') || $('title').text() || $('h1').first().text()).split(/\||-|–/)[0].trim();
         }
         
-        predictionData.headline = headline;
-        const initialPredictionResponse = await axios.post(PYTHON_API_URL, { news: headline });
-        const { prediction, confidence } = initialPredictionResponse.data;
+        const predictionResponse = await axios.post(PYTHON_API_URL, { news: headline });
+        const { prediction, confidence } = predictionResponse.data;
 
-        res.json({ prediction, confidence });
+        db.run(`INSERT INTO predictions (user_id, headline, prediction, confidence) VALUES (?, ?, ?, ?)`,
+            [req.session.user.id, headline, prediction, confidence]);
 
+        res.json({ prediction, confidence, headline });
     } catch (error) {
-        console.error('Error in /predict route:', error.message);
-        if (!res.headersSent) {
-             res.status(500).json({ error: 'An internal error occurred.' });
-        }
+        res.status(500).json({ error: 'Failed to get prediction.' });
     }
 });
+
+// --- NEW: Gemini Explanation Route ---
+app.post('/explain', checkAuth, async (req, res) => {
+    try {
+        const { headline, prediction } = req.body;
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const prompt = `A news headline, "${headline}", was classified as "${prediction}". Provide a brief, 2-3 sentence explanation for why this might be the case. Focus on common characteristics of such headlines.`;
+
+        const result = await model.generateContentStream(prompt);
+
+        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Transfer-Encoding', 'chunked');
+
+        for await (const chunk of result.stream) {
+            res.write(chunk.text());
+        }
+        res.end();
+
+    } catch (error) {
+        console.error("Error calling Gemini API:", error);
+        res.status(500).end("Failed to get explanation.");
+    }
+});
+
 
 app.listen(PORT, () => {
     console.log(`Node.js server running at http://localhost:${PORT}`);
