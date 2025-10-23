@@ -121,7 +121,7 @@ app.post('/explain', checkAuth, async (req, res) => {
     try {
         const { headline, prediction } = req.body;
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        const prompt = `A news headline, "${headline}", was classified as "${prediction}". Provide a brief, 2-3 sentence explanation for why this might be the case. Focus on common characteristics of such headlines.`;
+        const prompt = `A news headline, "${headline}", was classified as "${prediction}". Provide a brief, 2-3 sentence explanation for why this might be the case in simple and understandable words. Focus on common characteristics of such headlines.`;
 
         const result = await model.generateContentStream(prompt);
 
