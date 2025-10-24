@@ -139,6 +139,22 @@ app.post('/explain', checkAuth, async (req, res) => {
     }
 });
 
+// In server.js
+
+app.post('/logout', (req, res) => {
+    // --- ADD THIS DEBUGGING LINE ---
+    console.log('✅ /logout endpoint was hit. Session will be destroyed.'); 
+    
+    req.session.destroy((err) => {
+        if (err) { 
+            console.error("Session destruction error:", err);
+            return res.status(500).json({ success: false, message: 'Could not log out.' }); 
+        }
+        res.clearCookie('connect.sid');
+        return res.json({ success: true, message: 'Logged out successfully.' });
+    });
+});
+
 
 app.listen(PORT, () => {
     console.log(`Node.js server running at http://localhost:${PORT}`);
