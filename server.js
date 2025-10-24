@@ -92,16 +92,49 @@ app.get('/history', checkAuth, (req, res) => {
 });
 
 app.post('/predict', checkAuth, async (req, res) => {
-    // This route now only returns the prediction and confidence
+    let predictionData = { userId: req.session.user.id };
+    
     try {
         const { input, type } = req.body;
+        if (!input) return res.status(400).json({ error: 'Input is required' });
+
         let headline = input;
 
         if (type === 'url') {
-            const url = input.startsWith('http') ? input : `https://${input}`;
-            const response = await axios.get(url, { timeout: 5000 });
-            const $ = cheerio.load(response.data);
-            headline = ($('meta[property="og:title"]').attr('content') || $('title').text() || $('h1').first().text()).split(/\||-|–/)[0].trim();
+            try {
+                const url = input.startsWith('http') ? input : `https://${input}`;
+                const response = await axios.get(url, { timeout: 5000 });
+                const $ = cheerio.load(response.data);
+
+                let scrapedTitle = 
+                    $('meta[property="og:title"]').attr('content') ||
+                    $('meta[name="twitter:title"]').attr('content') ||
+                    $('title').text() ||
+                    $('h1').first().text();
+                
+                if (!scrapedTitle || scrapedTitle.trim() === '') {
+                    // **Error for no title found**
+                    throw new Error("Could not find a valid headline at that URL.");
+                }
+
+                headline = scrapedTitle.split(/\||-|–/)[0].trim();
+                
+                const wordCount = headline.split(' ').length;
+                const blocklist = ['msn', 'news', 'home', 'homepage'];
+                if (wordCount < 3 || blocklist.includes(headline.toLowerCase())) {
+                    // **Error for generic/invalid titles**
+                     throw new Error(`Scraped title "${headline}" is not a valid headline. Please enter it manually.`);
+                }
+                
+            } catch (scrapeError) {
+                console.error("Scraping/Validation error:", scrapeError.message);
+                
+                if (scrapeError.response && scrapeError.response.status === 451) {
+                    return res.status(400).json({ error: 'This website is unavailable due to legal or regional restrictions.' });
+                }
+                // **Generic error for inaccessible websites or other issues**
+                return res.status(400).json({ error: 'Could not access the website or find a valid headline. Please try entering the title manually.' });
+            }
         }
         
         const predictionResponse = await axios.post(PYTHON_API_URL, { news: headline });
@@ -111,8 +144,10 @@ app.post('/predict', checkAuth, async (req, res) => {
             [req.session.user.id, headline, prediction, confidence]);
 
         res.json({ prediction, confidence, headline });
+
     } catch (error) {
-        res.status(500).json({ error: 'Failed to get prediction.' });
+        console.error('Error in /predict route:', error.message);
+        res.status(500).json({ error: 'An internal server error occurred.' });
     }
 });
 
@@ -152,6 +187,19 @@ app.post('/logout', (req, res) => {
         }
         res.clearCookie('connect.sid');
         return res.json({ success: true, message: 'Logged out successfully.' });
+    });
+});
+
+// Add this new route to your server.js file
+
+app.delete('/history/clear', checkAuth, (req, res) => {
+    const userId = req.session.user.id;
+    db.run(`DELETE FROM predictions WHERE user_id = ?`, [userId], function(err) {
+        if (err) {
+            console.error("Failed to clear history:", err.message);
+            return res.status(500).json({ success: false, message: 'Failed to clear history.' });
+        }
+        res.json({ success: true, message: 'History cleared successfully.' });
     });
 });
 

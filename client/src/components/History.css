@@ -1,0 +1,189 @@
+/* client/src/components/History.css - CORRECTED VERSION */
+
+/* 1. Import the 'Changa One' font */
+@import url('https://fonts.googleapis.com/css2?family=Changa+One:ital@0;1&display=swap');
+
+/* 2. Apply the font to the history page container */
+.history-page-container {
+  font-family: "Changa One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.history-page-container table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.history-page-container th, 
+.history-page-container td {
+    padding: 12px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+    vertical-align: middle; /* Vertically center the content */
+}
+
+.history-page-container th {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* --- NEW, MORE VISIBLE STYLES --- */
+
+/* Shared styles for both real and fake pills */
+.history-page-container td.real,
+.history-page-container td.fake {
+    font-weight: bold;
+    text-align: center;
+    border-radius: 50px; /* Pill shape */
+    padding: 8px 12px;
+    display: inline-block; /* Allows for padding and border-radius */
+    width: 100px; /* Give a consistent width */
+    box-sizing: border-box;
+}
+
+/* Highlighted style for Fake News */
+.history-page-container td.fake {
+    background-color: #e74c3c; /* Strong red background */
+    color: #ffffff; /* Bright white text */
+    border: 1px solid #c0392b; /* Slightly darker red border */
+}
+
+/* Highlighted style for Real News */
+.history-page-container td.real {
+    background-color: #2ecc71; /* Strong green background */
+    color: #ffffff; /* Bright white text */
+    border: 1px solid #27ae60; /* Slightly darker green border */
+}
+
+/* Add these styles to client/src/components/History.css */
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.history-header h1 {
+    margin: 0;
+}
+
+.clear-history-btn {
+    width: auto; /* Override the global 100% width for buttons */
+    padding: 10px 20px;
+    background-image: linear-gradient(to right, #e74c3c 0%, #c0392b 100%); /* Red gradient for a delete action */
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: "Changa One", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    transition: all 0.3s ease;
+}
+
+.clear-history-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+}
+
+/* Add these styles to client/src/components/History.css */
+
+/* Style for the disabled state of the button */
+.clear-history-btn:disabled {/* client/src/components/History.css - FINAL CORRECTED VERSION */
+
+@import url('https://fonts.googleapis.com/css2?family=Changa+One:ital@0;1&display=swap');
+
+.history-page-container {
+  font-family: "Changa One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.history-header h1 {
+    margin: 0;
+}
+
+.clear-history-btn {
+    width: auto;
+    padding: 10px 20px;
+    background-image: linear-gradient(to right, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: "Changa One", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    transition: all 0.3s ease;
+}
+
+.clear-history-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+}
+
+.clear-history-btn:disabled {
+    background-image: none;
+    background-color: #555;
+    color: #999;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.history-page-container table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.history-page-container th, 
+.history-page-container td {
+    padding: 12px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.history-page-container th {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.history-page-container td.real,
+.history-page-container td.fake {
+    font-weight: bold;
+    text-align: center;
+    border-radius: 50px;
+    padding: 8px 12px;
+    display: inline-block;
+    width: 100px;
+    box-sizing: border-box;
+}
+
+.history-page-container td.fake {
+    background-color: #e74c3c;
+    color: #ffffff;
+    border: 1px solid #c0392b;
+}
+
+.history-page-container td.real {
+    background-color: #2ecc71;
+    color: #ffffff;
+    border: 1px solid #27ae60;
+}
+    background-image: none; /* Remove the gradient */
+    background-color: #555; /* Gray background */
+    color: #999; /* Lighter text color */
+    cursor: not-allowed; /* Show a "not allowed" cursor */
+    box-shadow: none;
+    transform: none;
+}

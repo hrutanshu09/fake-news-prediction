@@ -11,7 +11,9 @@ import Predictor from './components/Predictor';
 import History from './components/History';
 import ProtectedRoute from './components/ProtectedRoute';
 import PillNav from './components/PillNav';
+import Aurora from './components/Aurora'; // 1. Import Aurora here
 import logo from './assets/logo.svg';
+import './App.css'; // 2. Import the new App.css for layout
 
 // This helper component manages all navigation logic
 function NavigationController() {
@@ -20,16 +22,15 @@ function NavigationController() {
   const isLoggedIn = !!localStorage.getItem('user');
 
   const handleLogout = async () => {
-    // **THE FIX**: This tells the browser to send the session cookie.
-    await fetch('http://localhost:3000/logout', { 
-        method: 'POST', 
-        credentials: 'include' 
+    await fetch('http://localhost:3000/logout', {
+        method: 'POST',
+        credentials: 'include'
     });
     localStorage.removeItem('user');
-    navigate('/login');
+    navigate('/');
   };
 
-  // Define navigation items for different pages
+  // Define navigation items based on the current page
   let navItems = [];
 
   if (location.pathname === '/predictor') {
@@ -44,7 +45,7 @@ function NavigationController() {
     ];
   }
 
-  // Hide the navigation on login, signup, and welcome pages
+  // Hide the navigation on welcome, login, and signup pages
   if (['/', '/login', '/signup'].includes(location.pathname)) {
     return null;
   }
@@ -65,22 +66,35 @@ function NavigationController() {
 
 function App() {
   return (
-    <Router>
-      <NavigationController />
-      <Routes>
-        <Route path="/" element={<Welcome />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route
-          path="/predictor"
-          element={<ProtectedRoute><Predictor /></ProtectedRoute>}
-        />
-        <Route
-          path="/history"
-          element={<ProtectedRoute><History /></ProtectedRoute>}
-        />
-      </Routes>
-    </Router>
+    // 3. Main container for layering
+    <div className="app-container">
+      {/* 4. Add Aurora as the global background */}
+      <Aurora
+        colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
+        blend={0.5}
+        amplitude={1.0}
+        speed={0.5}
+      />
+      {/* 5. Container for the actual page content */}
+      <div className="content-container">
+        <Router>
+          <NavigationController />
+          <Routes>
+            <Route path="/" element={<Welcome />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route
+              path="/predictor"
+              element={<ProtectedRoute><Predictor /></ProtectedRoute>}
+            />
+            <Route
+              path="/history"
+              element={<ProtectedRoute><History /></ProtectedRoute>}
+            />
+          </Routes>
+        </Router>
+      </div>
+    </div>
   );
 }
 
