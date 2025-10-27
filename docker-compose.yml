@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # Frontend Service (React + Nginx)
+  client:
+    build:
+      context: ./client # Point to the client directory
+      dockerfile: Dockerfile # Use the Dockerfile named 'Dockerfile' inside client/
+    container_name: fake-news-client
+    ports:
+      - "80:80" # Map host port 80 to container port 80
+    environment:
+      - REACT_APP_API_URL=http://localhost:3000
+
+    depends_on:
+      - backend
+
+  # Backend Service (Node.js + Express)
+  backend:
+    build:
+      context: ./backend # Point to the backend directory
+      dockerfile: Dockerfile # Use the Dockerfile named 'Dockerfile' inside backend/
+    container_name: fake-news-backend
+    ports:
+      - "3000:3000" # Map host port 3000 to container port 3000
+    volumes:
+      - history-data:/app
+    environment:
+      PYTHON_API_URL: http://ml_service:5000/predict
+    expose:
+      - "3000"
+    depends_on:
+      - ml_service
+
+  # Machine Learning Service (Python + Flask)
+  ml_service:
+    build:
+      context: ./ml_service
+      dockerfile: Dockerfile
+    container_name: fake-news-ml-api
+    expose:
+      - "5000"
+
+volumes:
+  history-data:

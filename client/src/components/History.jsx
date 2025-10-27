@@ -8,7 +8,7 @@ function History() {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      const response = await fetch('http://localhost:3000/history', {
+      const response = await fetch('/history', {
         credentials: 'include'
       });
       const data = await response.json();
