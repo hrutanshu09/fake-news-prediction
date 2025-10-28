@@ -22,7 +22,7 @@ function History() {
   const handleClearHistory = async () => {
     if (window.confirm('Are you sure you want to delete your entire prediction history? This action cannot be undone.')) {
         try {
-            const response = await fetch('http://localhost:3000/history/clear', {
+            const response = await fetch('/history/clear', {
                 method: 'DELETE',
                 credentials: 'include'
             });

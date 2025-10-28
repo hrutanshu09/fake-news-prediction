@@ -22,7 +22,7 @@ function NavigationController() {
   const isLoggedIn = !!localStorage.getItem('user');
 
   const handleLogout = async () => {
-    await fetch('http://localhost:3000/logout', {
+    await fetch('/logout', {
         method: 'POST',
         credentials: 'include'
     });

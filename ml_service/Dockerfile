@@ -1,18 +1,27 @@
-FROM python:3.11-slim
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
 
+# Set the working directory in the container
 WORKDIR /app
 
-# Install Python dependencies
-RUN pip install Flask numpy nltk scikit-learn
+# Copy the requirements file first to leverage Docker cache
+COPY requirements.txt .
 
-# Download the NLTK stopwords data
-RUN python -c "import nltk; nltk.download('stopwords')"
+# Install any needed packages specified in requirements.txt
+# Also, download the NLTK stopwords data
+RUN pip install --no-cache-dir -r requirements.txt && \
+    python -m nltk.downloader stopwords
 
-# Copy the application and model files
+# Copy all the application code into the container
 COPY . .
 
-# Expose the port the API runs on
+# --- THIS IS THE FIX ---
+# Run the training script to generate the model.pkl and tfidf_vectorizer.pkl files
+RUN python train_model.py
+
+# Make port 5000 available
 EXPOSE 5000
 
-# Command to run the Flask API
+# Run api.py when the container launches
 CMD ["python", "api.py"]
+

@@ -15,7 +15,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const app = express();
 const PORT = 3000;
-const PYTHON_API_URL = 'http://ml_service:5000/predict';
+const PYTHON_API_URL = process.env.PYTHON_API_URL || 'http://ml_service:5000/predict';
 
 // --- Middleware ---
 app.use(cors({
